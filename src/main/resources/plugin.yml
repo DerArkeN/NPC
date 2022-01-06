@@ -1,0 +1,8 @@
+name: NPCs
+version: '${project.version}'
+main: me.arken.npcs.NPCs
+api-version: 1.18
+authors: [ arkeN ]
+
+commands:
+  createnpc:
