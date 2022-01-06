@@ -56,4 +56,8 @@ public final class NPCs extends JavaPlugin {
             }
         });
     }
+
+    public static JavaPlugin getPlugin() {
+        return getProvidingPlugin(NPCs.class);
+    }
 }
