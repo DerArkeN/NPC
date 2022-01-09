@@ -1,16 +1,15 @@
-package me.arken.npcs.util;
+package me.arken.npcs.commands;
 
-import me.arken.npcs.util.ExecuteCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 public abstract class PluginCommand implements CommandExecutor {
-    private final ExecuteCommand executeCommand;
+    private final CommandHandler executeCommand;
 
     public PluginCommand() {
-        executeCommand = getClass().getDeclaredAnnotation(ExecuteCommand.class);
+        executeCommand = getClass().getDeclaredAnnotation(CommandHandler.class);
     }
 
     @Override
@@ -25,7 +24,7 @@ public abstract class PluginCommand implements CommandExecutor {
 
     protected abstract void execute(CommandSender sender, Command command, String label, String[] args);
 
-    public ExecuteCommand getCommand() {
+    public CommandHandler getCommand() {
         return executeCommand;
     }
 }
