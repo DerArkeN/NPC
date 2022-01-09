@@ -43,6 +43,8 @@ public class NPC {
     private final ServerPlayer serverNPC;
     private final Player player;
 
+    private final Cache<Player, ServerPlayer> npcCache = CacheBuilder.newBuilder().expireAfterWrite(1L, TimeUnit.SECONDS).build();
+
     private boolean isSkinSet = false;
     private boolean showOnTab = false;
     private ItemStack mainHandItem = null;
@@ -71,19 +73,16 @@ public class NPC {
         NPCs.getNpcs().add(serverNPC);
     }
 
-    private final Cache<Player, ServerPlayer> npcCache = CacheBuilder.newBuilder().expireAfterWrite(1L, TimeUnit.SECONDS).build();
     private void handleInteractEvent(Player player, int entityId) {
         NPCs.getNpcs().stream().filter(npc -> npc.getId() == entityId)
-                .forEach(npc -> {
-                    Bukkit.getScheduler().runTaskLater(NPCs.getPlugin(), () -> {
-                        ServerPlayer clicked = npcCache.getIfPresent(player);
-                        if(clicked != null && clicked.equals(serverNPC)) return;
-                        npcCache.put(player, serverNPC);
+                .forEach(npc -> Bukkit.getScheduler().runTaskLater(NPCs.getPlugin(), () -> {
+                    ServerPlayer clicked = npcCache.getIfPresent(player);
+                    if(clicked != null && clicked.equals(serverNPC)) return;
+                    npcCache.put(player, serverNPC);
 
-                        NPCInteractEvent npcInteractionEvent = new NPCInteractEvent(getNPC(), player, null);
-                        Bukkit.getPluginManager().callEvent(npcInteractionEvent);
-                    }, 2);
-                });
+                    NPCInteractEvent npcInteractionEvent = new NPCInteractEvent(getNPC(), player, null);
+                    Bukkit.getPluginManager().callEvent(npcInteractionEvent);
+                }, 2));
     }
 
     public void setLocation(Location location) {
@@ -102,14 +101,8 @@ public class NPC {
         serverPlayer.connection.send(new ClientboundAddPlayerPacket(serverNPC));
         serverPlayer.connection.send(new ClientboundRotateHeadPacket(serverNPC, (byte) ((serverNPC.getBukkitEntity().getLocation().getYaw()%360)*256/360)));
         if(isSkinSet) serverPlayer.connection.send(new ClientboundSetEntityDataPacket(serverNPC.getId(), serverNPC.getEntityData(), true));
-        if(!showOnTab) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    serverPlayer.connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, serverNPC));
-                }
-            }.runTaskLaterAsynchronously(NPCs.getPlugin(), 20);
-        }
+        if(!showOnTab) Bukkit.getScheduler().runTaskLaterAsynchronously(NPCs.getPlugin(), () -> serverPlayer.connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.
+                Action.REMOVE_PLAYER, serverNPC)), 20);
         if(mainHandItem != null) serverPlayer.connection.send(new ClientboundSetEquipmentPacket(serverNPC.getId(), List.of(Pair.of(EquipmentSlot.MAINHAND,
                 CraftItemStack.asNMSCopy(mainHandItem)))));
         if(offHandItem != null) serverPlayer.connection.send(new ClientboundSetEquipmentPacket(serverNPC.getId(), List.of(Pair.of(EquipmentSlot.MAINHAND,
