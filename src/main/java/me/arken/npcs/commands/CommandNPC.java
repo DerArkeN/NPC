@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.UUID;
+
 @CommandHandler(command = "npc", permission = "op")
 public class CommandNPC extends PluginCommand {
 
@@ -20,15 +22,10 @@ public class CommandNPC extends PluginCommand {
     protected void execute(CommandSender sender, Command command, String label, String[] args) {
         if(sender instanceof Player player) {
             for(Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                NPC npc = new NPC(onlinePlayer, player.getDisplayName());
+                NPC npc = new NPC(onlinePlayer, "NPC");
                 switch(args[0]) {
                     case "create":
-                        npc.show();
                         npc.setLocation(player.getLocation());
-                        npc.setSkin(player.getDisplayName(), "1111110");
-                        npc.setMainHandItem(player.getInventory().getItemInMainHand());
-                        ItemStack[] contents = {player.getInventory().getArmorContents()[0], null, player.getInventory().getArmorContents()[2], null};
-                        npc.setArmorContents(contents);
 
                         player.sendMessage(NPCs.getPrefix() + "§aCreated NPC with Id: " + npc.getServerNPC().getId());
                     case "editor":

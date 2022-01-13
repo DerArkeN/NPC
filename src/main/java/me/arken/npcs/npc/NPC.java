@@ -26,7 +26,6 @@ import org.bukkit.craftbukkit.v1_18_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_18_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -87,6 +86,8 @@ public class NPC {
 
     public void setLocation(Location location) {
         serverNPC.setPos(location.getX(), location.getY(), location.getZ());
+
+        update();
     }
 
     public void update() {
