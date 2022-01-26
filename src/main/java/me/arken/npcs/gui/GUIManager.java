@@ -1,45 +1,39 @@
 package me.arken.npcs.gui;
 
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.reflections.Reflections;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class GUIManager {
 
-    public static GUI getMainGUI(Player player, String name) {
-        ArrayList<ItemStack> contents = new ArrayList<>();
-        contents.add(createFunctionalItem( "Set Name", Material.NAME_TAG));
-        contents.add(createFunctionalItem("Set Skin", Material.PLAYER_HEAD));
+    private final ArrayList<GUI> GUIS = new ArrayList<>();
 
-        return new GUI(player, name, contents, Material.GRAY_STAINED_GLASS_PANE);
+    public GUIManager() {
+        Set<Class<? extends GUI>> classes = new Reflections("me.arken.npcs.gui").getSubTypesOf(GUI.class);
+
+        classes.forEach(clazz -> {
+            try {
+                GUI gui = clazz.getDeclaredConstructor().newInstance();
+
+                GUIS.add(gui);
+            }catch(InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    public static GUI getNameGUI(Player player) {
-        ArrayList<ItemStack> contents = new ArrayList<>();
-        contents.add(createFunctionalItem("Set Name", Material.ANVIL));
-        contents.add(createFunctionalItem("Reset", Material.BARRIER));
-
-        return new GUI(player, "Set Name", contents, Material.GRAY_STAINED_GLASS_PANE);
+    public GUI getGUI(String name) {
+        for(GUI gui : GUIS) {
+            if(gui.getName().equals(name)) {
+                return gui;
+            }
+        }
+        return null;
     }
 
-    public static GUI getSkinGUI(Player player) {
-        ArrayList<ItemStack> contents = new ArrayList<>();
-        contents.add(createFunctionalItem("Set Skin", Material.ANVIL));
-        contents.add(createFunctionalItem("Reset", Material.BARRIER));
-
-        return new GUI(player, "Set Skin", contents, Material.GRAY_STAINED_GLASS_PANE);
+    public ArrayList<GUI> getGUIS() {
+        return GUIS;
     }
-
-    private static ItemStack createFunctionalItem(String name, Material material) {
-        ItemStack itemStack = new ItemStack(material);
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.setDisplayName(name);
-        itemStack.setItemMeta(itemMeta);
-
-        return itemStack;
-    }
-
 }

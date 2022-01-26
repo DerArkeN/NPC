@@ -11,8 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.UUID;
-
 @CommandHandler(command = "npc", permission = "op")
 public class CommandNPC extends PluginCommand {
 
@@ -22,7 +20,7 @@ public class CommandNPC extends PluginCommand {
     protected void execute(CommandSender sender, Command command, String label, String[] args) {
         if(sender instanceof Player player) {
             for(Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                NPC npc = new NPC(onlinePlayer, "NPC");
+                NPC npc = new NPC(onlinePlayer);
                 switch(args[0]) {
                     case "create":
                         npc.setLocation(player.getLocation());
