@@ -13,12 +13,20 @@ public class SettingsGUI extends GUI {
         ArrayList<ItemStack> contents = new ArrayList<>();
 
         for(GUI gui : NPCs.getGuiManager().getGUIS()) {
-            if(!gui.equals(this)) {
-                ItemStack functionalItem = createFunctionalItem(gui.getName(), gui.getFunctionalItems().get(0).getType());contents.add(functionalItem);
+            if(gui.getParentGUI() != null) {
+                if(gui.getParentGUI().equals(getName())) {
+                    ItemStack functionalItem = createFunctionalItem(gui.getName(), gui.getFunctionalItems().get(0).getType());
+                    contents.add(functionalItem);
+                }
             }
         }
 
         return contents;
+    }
+
+    @Override
+    public String getParentGUI() {
+        return null;
     }
 
     @Override

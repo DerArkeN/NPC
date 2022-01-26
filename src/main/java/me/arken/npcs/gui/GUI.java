@@ -14,6 +14,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public abstract class GUI implements Listener {
 
@@ -71,18 +72,22 @@ public abstract class GUI implements Listener {
 
     public abstract ArrayList<ItemStack> getFunctionalItems();
 
-    public String getName() {
-        return name;
+    protected abstract void handle(Player player, ItemStack currentItem, GUIManager guiManager);
+
+    public String getParentGUI() {
+        return "Settings";
     }
 
-    protected abstract void handle(Player player, ItemStack currentItem, GUIManager guiManager);
+    public String getName() {
+        return this.name;
+    }
 
     public Material getFiller() {
         return Material.GRAY_STAINED_GLASS_PANE;
     }
 
     public Inventory getInventory() {
-        return inventory;
+        return this.inventory;
     }
 
     protected final ItemStack createFunctionalItem(String name, Material material) {

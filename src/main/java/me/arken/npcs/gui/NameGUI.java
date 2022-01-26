@@ -35,7 +35,7 @@ public class NameGUI extends GUI {
                         })
                         .text("")
                         .itemLeft(new ItemStack(Material.PAPER))
-                        .title("Set name")
+                        .title("Enter name")
                         .plugin(NPCs.getPlugin())
                         .open(player);
             }
