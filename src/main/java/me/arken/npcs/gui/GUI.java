@@ -1,5 +1,6 @@
 package me.arken.npcs.gui;
 
+import jline.internal.Nullable;
 import me.arken.npcs.NPCs;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,15 +15,16 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
 
 public abstract class GUI implements Listener {
 
     private Inventory inventory;
+    private GUIManager guiManager;
     private final String name;
 
     public GUI() {
         name = this.getClass().getSimpleName().replaceAll("GUI", "");
+        guiManager = NPCs.getGuiManager();
 
         ItemStack fillerItem = new ItemStack(getFiller());
         ItemMeta fillerItemMeta = fillerItem.getItemMeta();
@@ -31,24 +33,9 @@ public abstract class GUI implements Listener {
 
         //Scheduler to load GUIManager first
         Bukkit.getScheduler().runTaskLater(NPCs.getPlugin(), () -> {
-            int inventorySize = (getFunctionalItems().size()>=54) ? 54 : getFunctionalItems().size()+(9-getFunctionalItems().size()%9)*Math.min(1, getFunctionalItems().size()%9);
-
-            inventory = Bukkit.createInventory(() -> null, inventorySize, getName());
-
-            for(int i = 0; i < inventory.getSize(); i++) {
-                inventory.setItem(i, fillerItem);
-            }
-            for(int i = 0; i < getFunctionalItems().size(); i++) {
-                inventory.setItem(i, getFunctionalItems().get(i));
-            }
-
-            ItemStack back = new ItemStack(Material.PLAYER_HEAD);
-            SkullMeta backMeta = (SkullMeta) back.getItemMeta();
-            backMeta.setOwner("MHF_ArrowLeft");
-            backMeta.setDisplayName("Settings");
-            back.setItemMeta(backMeta);
-
-            inventory.setItem(inventory.getSize()-1, back);
+            guiManager = NPCs.getGuiManager();
+            if(!guiManager.getGUIS().contains(this)) guiManager.addGUI(this);
+            addContents(fillerItem);
         }, 20);
 
         Bukkit.getPluginManager().registerEvents(this, NPCs.getPlugin());
@@ -56,13 +43,14 @@ public abstract class GUI implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
+        guiManager = NPCs.getGuiManager();
         if(event.getClickedInventory() != null) {
             if(Arrays.equals(event.getClickedInventory().getContents(), this.getInventory().getContents())) {
                 if(event.getCurrentItem() != null) {
                     if(event.getCurrentItem().getItemMeta().getDisplayName().equals("Settings")) {
-                        event.getWhoClicked().openInventory(NPCs.getGuiManager().getGUI("Settings").getInventory());
+                        event.getWhoClicked().openInventory(guiManager.getGUI("Settings").getInventory());
                     }else {
-                        handle((Player) event.getWhoClicked(), event.getCurrentItem(), NPCs.getGuiManager());
+                        handle((Player) event.getWhoClicked(), event.getCurrentItem(), guiManager);
                     }
                     event.setCancelled(true);
                 }
@@ -74,6 +62,7 @@ public abstract class GUI implements Listener {
 
     protected abstract void handle(Player player, ItemStack currentItem, GUIManager guiManager);
 
+    @Nullable
     public String getParentGUI() {
         return "Settings";
     }
@@ -98,4 +87,39 @@ public abstract class GUI implements Listener {
 
         return itemStack;
     }
+
+    private void addContents(ItemStack fillerItem) {
+        guiManager = NPCs.getGuiManager();
+        ArrayList<ItemStack> functionalItems = new ArrayList<>();
+        functionalItems.addAll(getFunctionalItems());
+        for(GUI gui : guiManager.getGUIS()) {
+            if(gui.getParentGUI() != null) {
+                if(gui.getParentGUI().equals(getName())) {
+                    ItemStack functionalItem = createFunctionalItem(gui.getName(), gui.getFunctionalItems().get(0).getType());
+                    functionalItems.add(functionalItem);
+                }
+            }
+        }
+
+        int inventorySize = (functionalItems.size()>=54) ? 54 : functionalItems.size()+(9-functionalItems.size()%9)*Math.min(1, functionalItems.size()%9);
+
+        inventory = Bukkit.createInventory(() -> null, inventorySize, getName());
+
+        for(int i = 0; i < inventory.getSize(); i++) {
+            inventory.setItem(i, fillerItem);
+        }
+
+        for(int i = 0; i < functionalItems.size(); i++) {
+            inventory.setItem(i, functionalItems.get(i));
+        }
+
+        ItemStack back = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta backMeta = (SkullMeta) back.getItemMeta();
+        backMeta.setOwner("MHF_ArrowLeft");
+        backMeta.setDisplayName("Settings");
+        back.setItemMeta(backMeta);
+
+        inventory.setItem(inventory.getSize()-1, back);
+    }
+
 }

@@ -36,7 +36,6 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class NPC {
@@ -50,6 +49,7 @@ public class NPC {
     private ItemStack offHandItem = null;
     private ItemStack[] armorContents = null;
     private String name = "NPC";
+    private String bitmask;
 
     public NPC(Player player) {
         this.player = player;
@@ -98,7 +98,7 @@ public class NPC {
         if(!name.equals("NPC")) {
             serverPlayer.connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.UPDATE_DISPLAY_NAME, serverNPC));
         }
-        if(isSkinSet) serverPlayer.connection.send(new ClientboundSetEntityDataPacket(serverNPC.getId(), serverNPC.getEntityData(), true));
+        if(isSkinSet) serverPlayer.connection.send(new ClientboundSetEntityDataPacket(serverNPC.getId(), serverNPC.getEntityData(), false));
         if(!showOnTab) Bukkit.getScheduler().runTaskLaterAsynchronously(NPCs.getPlugin(), () -> serverPlayer.connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.
                 Action.REMOVE_PLAYER, serverNPC)), 20);
         if(mainHandItem != null) serverPlayer.connection.send(new ClientboundSetEquipmentPacket(serverNPC.getId(), List.of(Pair.of(EquipmentSlot.MAINHAND,
@@ -124,7 +124,7 @@ public class NPC {
     }
 
     //https://wiki.vg/Protocol#Client_Settings for bitmask
-    public void setSkin(String username, @Nullable String bitmask) {
+    public void setSkin(String username) {
         try {
             HttpsURLConnection connection = (HttpsURLConnection) new URL(String.format("https://api.ashcon.app/mojang/v2/user/%s", username)).openConnection();
             if (connection.getResponseCode() == HttpsURLConnection.HTTP_OK) {
@@ -138,6 +138,7 @@ public class NPC {
                 String skin = reply.substring(indexOfValue + 10, reply.indexOf("\"", indexOfValue + 10));
                 String signature = reply.substring(indexOfSignature + 14, reply.indexOf("\"", indexOfSignature + 14));
 
+                serverNPC.getGameProfile().getProperties().get("textures").clear();
                 serverNPC.getGameProfile().getProperties().put("textures", new Property("textures", skin, signature));
             }
 
@@ -150,9 +151,31 @@ public class NPC {
 
         SynchedEntityData entityData = serverNPC.getEntityData();
         bitmask = bitmask != null ? bitmask : "1111111";
+
+        entityData.set(new EntityDataAccessor<>(17, EntityDataSerializers.BYTE), (byte) 0);
+        update();
         entityData.set(new EntityDataAccessor<>(17, EntityDataSerializers.BYTE), (byte) Integer.parseInt(bitmask, 2));
 
         isSkinSet = true;
+        update();
+    }
+
+    public String getBitmask() {
+        return bitmask;
+    }
+
+    public void updateSkinMask(int index, char var0) {
+        SynchedEntityData entityData = serverNPC.getEntityData();
+
+        StringBuilder stringBuilder = new StringBuilder(bitmask);
+        stringBuilder.setCharAt(index, var0);
+
+        bitmask = stringBuilder.toString();
+
+        entityData.set(new EntityDataAccessor<>(17, EntityDataSerializers.BYTE), (byte) 0);
+        update();
+        entityData.set(new EntityDataAccessor<>(17, EntityDataSerializers.BYTE), (byte) Integer.parseInt(bitmask, 2));
+
         update();
     }
 

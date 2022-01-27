@@ -16,7 +16,6 @@ public class NameGUI extends GUI {
     public ArrayList<ItemStack> getFunctionalItems() {
         ArrayList<ItemStack> contents = new ArrayList<>();
         contents.add(createFunctionalItem("Set Name", Material.NAME_TAG));
-        contents.add(createFunctionalItem("Reset", Material.BARRIER));
 
         return contents;
     }
@@ -38,9 +37,6 @@ public class NameGUI extends GUI {
                         .title("Enter name")
                         .plugin(NPCs.getPlugin())
                         .open(player);
-            }
-            case "Reset" -> {
-                npc.setName("NPC");
             }
         }
     }

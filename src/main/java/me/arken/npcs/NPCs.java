@@ -1,7 +1,6 @@
 package me.arken.npcs;
 
 import me.arken.npcs.commands.PluginCommand;
-import me.arken.npcs.gui.GUI;
 import me.arken.npcs.gui.GUIManager;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.event.Listener;

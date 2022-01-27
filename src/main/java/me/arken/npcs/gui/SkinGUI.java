@@ -16,8 +16,6 @@ public class SkinGUI extends GUI {
     public ArrayList<ItemStack> getFunctionalItems() {
         ArrayList<ItemStack> contents = new ArrayList<>();
         contents.add(createFunctionalItem("Set Skin", Material.PLAYER_HEAD));
-        contents.add(createFunctionalItem("Change layers", Material.WHITE_BANNER));
-        contents.add(createFunctionalItem("Reset", Material.BARRIER));
 
         return contents;
     }
@@ -30,7 +28,8 @@ public class SkinGUI extends GUI {
             case "Set Skin" -> {
                 new AnvilGUI.Builder()
                         .onComplete((target, text) -> {
-                            npc.setSkin(text, null);
+                            npc.setSkin(text);
+
                             target.sendMessage(NPCs.getPrefix() + "§aSkin set to " + text);
                             return AnvilGUI.Response.close();
                         })
@@ -40,12 +39,8 @@ public class SkinGUI extends GUI {
                         .plugin(NPCs.getPlugin())
                         .open(player);
             }
-            case "Change layers" -> {
-                LayerGUI layerGUI = new LayerGUI();
-                player.openInventory(layerGUI.getInventory());
-            }
-            case "Reset" -> {
-                npc.setSkin("Alex", null);
+            case "Layer" -> {
+                player.openInventory(guiManager.getGUI("Layer").getInventory());
             }
         }
     }
@@ -73,8 +68,22 @@ public class SkinGUI extends GUI {
 
         @Override
         protected void handle(Player player, ItemStack currentItem, GUIManager guiManager) {
+            NPC npc = ListenerInteractNPC.getCurrentNPC();
 
+            String itemName = currentItem.getItemMeta().getDisplayName();
+            switch(itemName) {
+                case "Cape" -> {
+                    if(currentItem.getType().equals(Material.GREEN_STAINED_GLASS_PANE)) {
+                        npc.updateSkinMask(6, '0');
+                        currentItem.setType(Material.RED_STAINED_GLASS_PANE);
+                        player.sendMessage(NPCs.getPrefix() + "§a" + itemName + " disabled!");
+                    }else {
+                        npc.updateSkinMask(6, '1');
+                        currentItem.setType(Material.GREEN_STAINED_GLASS_PANE);
+                        player.sendMessage(NPCs.getPrefix() + "§a" + itemName + " enabled!");
+                    }
+                }
+            }
         }
     }
-
 }

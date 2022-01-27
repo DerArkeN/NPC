@@ -3,12 +3,12 @@ package me.arken.npcs.gui;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 public class GUIManager {
 
-    private final ArrayList<GUI> GUIS = new ArrayList<>();
+    private final Set<GUI> GUIS = new HashSet<>();
 
     public GUIManager() {
         Set<Class<? extends GUI>> classes = new Reflections("me.arken.npcs.gui").getSubTypesOf(GUI.class);
@@ -16,12 +16,20 @@ public class GUIManager {
         classes.forEach(clazz -> {
             try {
                 GUI gui = clazz.getDeclaredConstructor().newInstance();
-
                 GUIS.add(gui);
             }catch(InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         });
+    }
+
+    public void addGUI(GUI gui) {
+        try {
+            gui = gui.getClass().getDeclaredConstructor().newInstance();
+            GUIS.add(gui);
+        }catch(InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
     }
 
     public GUI getGUI(String name) {
@@ -33,7 +41,7 @@ public class GUIManager {
         return null;
     }
 
-    public ArrayList<GUI> getGUIS() {
+    public Set<GUI> getGUIS() {
         return GUIS;
     }
 }

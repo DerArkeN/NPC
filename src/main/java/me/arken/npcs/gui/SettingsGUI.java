@@ -1,6 +1,5 @@
 package me.arken.npcs.gui;
 
-import me.arken.npcs.NPCs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -10,18 +9,7 @@ public class SettingsGUI extends GUI {
 
     @Override
     public ArrayList<ItemStack> getFunctionalItems() {
-        ArrayList<ItemStack> contents = new ArrayList<>();
-
-        for(GUI gui : NPCs.getGuiManager().getGUIS()) {
-            if(gui.getParentGUI() != null) {
-                if(gui.getParentGUI().equals(getName())) {
-                    ItemStack functionalItem = createFunctionalItem(gui.getName(), gui.getFunctionalItems().get(0).getType());
-                    contents.add(functionalItem);
-                }
-            }
-        }
-
-        return contents;
+        return new ArrayList<>();
     }
 
     @Override
