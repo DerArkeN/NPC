@@ -2,6 +2,7 @@ package me.arken.npcs.gui;
 
 import jline.internal.Nullable;
 import me.arken.npcs.NPCs;
+import me.arken.npcs.npc.NPC;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -15,27 +16,31 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public abstract class GUI implements Listener {
 
     private Inventory inventory;
-    private GUIManager guiManager;
+    private GUIManager guiManager = null;
     private final String name;
+    private final NPC npc;
 
-    public GUI() {
-        name = this.getClass().getSimpleName().replaceAll("GUI", "");
-        guiManager = NPCs.getGuiManager();
-
-        ItemStack fillerItem = new ItemStack(getFiller());
-        ItemMeta fillerItemMeta = fillerItem.getItemMeta();
-        fillerItemMeta.setDisplayName("");
-        fillerItem.setItemMeta(fillerItemMeta);
+    public GUI(NPC npc) {
+        this.name = this.getClass().getSimpleName().replaceAll("GUI", "");
+        this.npc = npc;
 
         //Scheduler to load GUIManager first
         Bukkit.getScheduler().runTaskLater(NPCs.getPlugin(), () -> {
-            guiManager = NPCs.getGuiManager();
+            this.guiManager = npc.getGuiManager();
+
+            ItemStack fillerItem = new ItemStack(getFiller());
+            ItemMeta fillerItemMeta = fillerItem.getItemMeta();
+            fillerItemMeta.setDisplayName("");
+            fillerItem.setItemMeta(fillerItemMeta);
+
             if(!guiManager.getGUIS().contains(this)) guiManager.addGUI(this);
             addContents(fillerItem);
+
         }, 20);
 
         Bukkit.getPluginManager().registerEvents(this, NPCs.getPlugin());
@@ -43,14 +48,13 @@ public abstract class GUI implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        guiManager = NPCs.getGuiManager();
-        if(event.getClickedInventory() != null) {
+        if(event.getClickedInventory() != null && event.getClickedInventory().getContents() != null) {
             if(Arrays.equals(event.getClickedInventory().getContents(), this.getInventory().getContents())) {
                 if(event.getCurrentItem() != null) {
                     if(event.getCurrentItem().getItemMeta().getDisplayName().equals("Settings")) {
                         event.getWhoClicked().openInventory(guiManager.getGUI("Settings").getInventory());
                     }else {
-                        handle((Player) event.getWhoClicked(), event.getCurrentItem(), guiManager);
+                        handle((Player) event.getWhoClicked(), event.getCurrentItem(), npc);
                     }
                     event.setCancelled(true);
                 }
@@ -58,9 +62,9 @@ public abstract class GUI implements Listener {
         }
     }
 
-    public abstract ArrayList<ItemStack> getFunctionalItems();
+    public abstract List<ItemStack> getFunctionalItems();
 
-    protected abstract void handle(Player player, ItemStack currentItem, GUIManager guiManager);
+    protected abstract void handle(Player player, ItemStack currentItem, NPC npc);
 
     @Nullable
     public String getParentGUI() {
@@ -89,9 +93,7 @@ public abstract class GUI implements Listener {
     }
 
     private void addContents(ItemStack fillerItem) {
-        guiManager = NPCs.getGuiManager();
-        ArrayList<ItemStack> functionalItems = new ArrayList<>();
-        functionalItems.addAll(getFunctionalItems());
+        ArrayList<ItemStack> functionalItems = new ArrayList<>(getFunctionalItems());
         for(GUI gui : guiManager.getGUIS()) {
             if(gui.getParentGUI() != null) {
                 if(gui.getParentGUI().equals(getName())) {

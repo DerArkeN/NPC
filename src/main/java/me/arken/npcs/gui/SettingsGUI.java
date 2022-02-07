@@ -1,14 +1,20 @@
 package me.arken.npcs.gui;
 
+import me.arken.npcs.npc.NPC;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SettingsGUI extends GUI {
 
+    public SettingsGUI(NPC npc) {
+        super(npc);
+    }
+
     @Override
-    public ArrayList<ItemStack> getFunctionalItems() {
+    public List<ItemStack> getFunctionalItems() {
         return new ArrayList<>();
     }
 
@@ -18,8 +24,8 @@ public class SettingsGUI extends GUI {
     }
 
     @Override
-    protected void handle(Player player, ItemStack currentItem, GUIManager guiManager) {
-        player.openInventory(guiManager.getGUI(currentItem.getItemMeta().getDisplayName()).getInventory());
+    protected void handle(Player player, ItemStack currentItem, NPC npc) {
+        player.openInventory(npc.getGuiManager().getGUI(currentItem.getItemMeta().getDisplayName()).getInventory());
     }
 
 }

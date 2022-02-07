@@ -8,9 +8,8 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.datafixers.util.Pair;
-import jline.internal.Nullable;
 import me.arken.npcs.NPCs;
-import net.minecraft.network.chat.Component;
+import me.arken.npcs.gui.GUIManager;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -19,6 +18,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Pose;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_18_R1.CraftServer;
@@ -42,9 +42,11 @@ public class NPC {
 
     private final ServerPlayer serverNPC;
     private final Player player;
+    private final GUIManager guiManager;
 
     private boolean isSkinSet = false;
     private boolean showOnTab = false;
+    private Pose pose = Pose.STANDING;
     private ItemStack mainHandItem = null;
     private ItemStack offHandItem = null;
     private ItemStack[] armorContents = null;
@@ -53,6 +55,7 @@ public class NPC {
 
     public NPC(Player player) {
         this.player = player;
+        this.guiManager = new GUIManager(this);
 
         MinecraftServer minecraftServer = ((CraftServer) Bukkit.getServer()).getServer();
         ServerLevel serverLevel = ((CraftWorld) player.getWorld()).getHandle();
@@ -78,8 +81,18 @@ public class NPC {
         NPCs.getNpcs().add(serverNPC);
     }
 
+    public GUIManager getGuiManager() {
+        return guiManager;
+    }
+
     public void setLocation(Location location) {
         serverNPC.setPos(location.getX(), location.getY(), location.getZ());
+
+        update();
+    }
+
+    public void setPose(Pose pose) {
+        this.pose = pose;
 
         update();
     }
@@ -101,6 +114,7 @@ public class NPC {
         if(isSkinSet) serverPlayer.connection.send(new ClientboundSetEntityDataPacket(serverNPC.getId(), serverNPC.getEntityData(), false));
         if(!showOnTab) Bukkit.getScheduler().runTaskLaterAsynchronously(NPCs.getPlugin(), () -> serverPlayer.connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.
                 Action.REMOVE_PLAYER, serverNPC)), 20);
+        if(pose != Pose.STANDING) serverNPC.setPose(pose);
         if(mainHandItem != null) serverPlayer.connection.send(new ClientboundSetEquipmentPacket(serverNPC.getId(), List.of(Pair.of(EquipmentSlot.MAINHAND,
                 CraftItemStack.asNMSCopy(mainHandItem)))));
         if(offHandItem != null) serverPlayer.connection.send(new ClientboundSetEquipmentPacket(serverNPC.getId(), List.of(Pair.of(EquipmentSlot.MAINHAND,

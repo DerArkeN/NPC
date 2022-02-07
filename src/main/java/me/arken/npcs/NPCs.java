@@ -1,7 +1,6 @@
 package me.arken.npcs;
 
 import me.arken.npcs.commands.PluginCommand;
-import me.arken.npcs.gui.GUIManager;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -16,15 +15,11 @@ public final class NPCs extends JavaPlugin {
 
     private static final Set<ServerPlayer> npcs = new HashSet<>();
     private static final String prefix = "§7[§aNPCs§7]§r ";
-    private static GUIManager guiManager;
 
     @Override
     public void onEnable() {
-        guiManager = new GUIManager();
-
         registerEvents("me.arken.npcs.listeners");
         registerCommands("me.arken.npcs.commands");
-
     }
 
     public static Set<ServerPlayer> getNpcs() {
@@ -66,7 +61,4 @@ public final class NPCs extends JavaPlugin {
         return getProvidingPlugin(NPCs.class);
     }
 
-    public static GUIManager getGuiManager() {
-        return guiManager;
-    }
 }

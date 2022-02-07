@@ -1,5 +1,6 @@
 package me.arken.npcs.gui;
 
+import me.arken.npcs.npc.NPC;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
@@ -10,12 +11,12 @@ public class GUIManager {
 
     private final Set<GUI> GUIS = new HashSet<>();
 
-    public GUIManager() {
+    public GUIManager(NPC npc) {
         Set<Class<? extends GUI>> classes = new Reflections("me.arken.npcs.gui").getSubTypesOf(GUI.class);
 
         classes.forEach(clazz -> {
             try {
-                GUI gui = clazz.getDeclaredConstructor().newInstance();
+                GUI gui = clazz.getDeclaredConstructor(NPC.class).newInstance(npc);
                 GUIS.add(gui);
             }catch(InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();

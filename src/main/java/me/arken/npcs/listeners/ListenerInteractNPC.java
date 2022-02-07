@@ -1,7 +1,6 @@
 package me.arken.npcs.listeners;
 
 import com.comphenix.protocol.wrappers.EnumWrappers;
-import me.arken.npcs.NPCs;
 import me.arken.npcs.commands.CommandNPC;
 import me.arken.npcs.gui.GUIManager;
 import me.arken.npcs.npc.NPC;
@@ -19,11 +18,13 @@ public class ListenerInteractNPC implements Listener {
         Player player = event.getPlayer();
         currentNPC = event.getClicked();
 
-        GUIManager guiManager = NPCs.getGuiManager();
+        GUIManager guiManager = event.getClicked().getGuiManager();
 
         if(event.getUseAction() == EnumWrappers.EntityUseAction.INTERACT) {
             if(player.getInventory().getItemInOffHand().equals(CommandNPC.getEditor()) || player.getInventory().getItemInMainHand().equals(CommandNPC.getEditor())) {
-                player.openInventory(guiManager.getGUI("Settings").getInventory());
+                if(guiManager.getGUI("Settings").getInventory() != null) {
+                    player.openInventory(guiManager.getGUI("Settings").getInventory());
+                }
             }
         }
     }
